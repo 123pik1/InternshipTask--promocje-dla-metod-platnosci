@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,11 +74,35 @@ public class Client {
         }
     }
 
+    private PaymentInstance partialPayment()
+    {
+
+        return new PaymentInstance();
+    }
+
+    private PaymentInstance pointsPayment()
+    {
+
+        return new PaymentInstance();
+    }
+
+    private PaymentInstance cardPayment(Order order, PaymentMethod method)
+    {
+
+        return new PaymentInstance();
+    }
+
 
     public void simulation()
     {
-        for (Order orders2 : orders) {
-            
+        List<PaymentInstance> listOfPayments = new ArrayList<>();
+        for (Order order : orders) {
+            List<String> promotions = order.getPromotions();
+            PaymentInstance currPayment = new PaymentInstance();
+            for (String promotion : promotions) {
+                
+            }
+            listOfPayments.add(currPayment);
         }
     }
 
