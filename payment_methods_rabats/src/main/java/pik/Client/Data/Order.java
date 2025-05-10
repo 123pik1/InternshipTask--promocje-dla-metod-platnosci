@@ -3,15 +3,19 @@ package pik.Client.Data;
 import java.util.ArrayList;
 
 import lombok.Getter;
+import lombok.Setter;
 
-public class Orders
+public class Order
 {
-    @Getter
+    @Getter @Setter
     String id;
 
-    @Getter
+    @Getter @Setter
     double value;
 
-    @Getter
+    @Getter @Setter
     ArrayList<String> promotions;
+
+    public Order() {
+    }
 }

@@ -5,17 +5,20 @@ import lombok.Setter;
 
 public class PaymentMethod
 {
-    @Getter
+    @Getter @Setter
     String id;
 
     @Getter @Setter
     double limit;
 
-    @Getter
+    @Getter @Setter
     double baseLimit;
     
-    @Getter
+    @Getter @Setter
     double discount;
+
+    public PaymentMethod()
+    {}
 
     public PaymentMethod(String id, double limit, double discount)
     {
@@ -23,6 +26,23 @@ public class PaymentMethod
         this.limit = limit;
         this.discount = discount;
         this.baseLimit = limit;
+    }
+
+    public void actualizeBaseLimit()
+    {
+        baseLimit = limit;
+    }
+
+    public double getSpent()
+    {
+        return baseLimit - limit;
+    }
+
+    public boolean isPunkty()
+    {
+        if (id.equals("PUNKTY"))
+            return true;
+        return false;
     }
 
 
