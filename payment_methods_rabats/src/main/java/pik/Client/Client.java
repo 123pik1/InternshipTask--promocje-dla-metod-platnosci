@@ -44,6 +44,9 @@ public class Client {
     }
 
     public void initPaymentMethods(String filePath) throws FileNotFoundException {
+        /*
+         * Reads from json then creates map for payment methods with id
+         */
         ArrayList<PaymentMethod> paymentMethods;
         try {
             paymentMethods = readFromJson(filePath, PaymentMethod.class);
@@ -59,6 +62,9 @@ public class Client {
     }
 
     public void initOrders(String filePath) throws FileNotFoundException {
+        /*
+         * Reads from json then creates map for orders with id
+         */
         try {
             ordersMap = new HashMap<>();
             orders = readFromJson(filePath, Order.class);
@@ -142,7 +148,7 @@ public class Client {
 
     private void iterateOverMethods(Order order, PaymentMethod points, List<PaymentInstance> paymentInstances) {
         /*
-         * checks all methods for 
+         * checks all methods for all possible payments for order
          */
         if (order == null)
             return;
@@ -160,6 +166,7 @@ public class Client {
     }
 
     public PaymentInstance chooseBestPayment(List<PaymentInstance> listOfPayments) {
+        // chooses best possible payment in listOfPayments
         if (listOfPayments.size() == 0) {
             return null;
         }
@@ -168,23 +175,22 @@ public class Client {
     }
 
     private void paymentVerification(PaymentInstance payment, PaymentMethod points) {
+        /*
+         * Verifies if specific payment is possible, if not finds alternative
+         */
         if (payment == null || payment.getMethodId() == null || payment.getOrderId() == null)
             return;
         PaymentMethod method = paymentMethodsMap.get(payment.getMethodId());
-        // System.out.println(payment.getOrderId());
         try {
-            // System.out.println(payment.getOrderId());
             if (!payment.getMethodId().equals("PUNKTY"))
                 method.spend(payment.getMoneyValue());
             points.spend(payment.getPointsUsed());
-            // recursiveIn = 0;
         } catch (LimitExceededException e) {
 
             try {
                 if (payment.getPointsUsed() != 0) // if it is partial transaction
                 {
-                    // recursiveIn = 0;
-                    // System.out.println(payment.getOrderId());
+
                     if (!payment.getMethodId().equals("PUNKTY"))
                         method.spend(payment.getValue(), points);
                 } else {
