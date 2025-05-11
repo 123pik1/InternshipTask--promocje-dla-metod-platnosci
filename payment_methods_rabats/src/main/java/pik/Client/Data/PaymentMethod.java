@@ -26,7 +26,7 @@ public class PaymentMethod
         this.baseLimit = method.getBaseLimit();
         this.limit = method.getLimit();
         this.id = method.getId();
-        this.discount = method.getDiscount();
+        this.discount = method.getDiscount()*100;
     }
 
     public PaymentMethod(String id, double limit, double discount)
@@ -63,7 +63,6 @@ public class PaymentMethod
     {
         if (limit > spending) {
             limit -= spending;
-            System.out.println(id+" spent: "+spending +" left "+this.limit);
         } else {
             throw new LimitExceededException();
         }
@@ -71,8 +70,8 @@ public class PaymentMethod
     
     public void spend(double spending, PaymentMethod points) throws LimitExceededException
     {
-        System.out.println("special spending " + id);
-        points.spend(spending - this.limit);
+        if (id!="PUNKTY")
+            points.spend(spending - this.limit);
         this.limit -= spending;
         if (this.limit <=0)
             this.limit = 0;

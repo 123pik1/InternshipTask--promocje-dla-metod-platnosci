@@ -16,10 +16,10 @@ import pik.Exceptions.ImpossibleTransactionException;
 import pik.Exceptions.LimitExceededException;
 
 public class Client {
-    Map<String, PaymentMethod> paymentMethodsMap;
+    public Map<String, PaymentMethod> paymentMethodsMap;
     ArrayList<Order> orders;
     List<PaymentInstance> listOfPayments = new ArrayList<>();
-    Map<String, Order> ordersMap;
+    public Map<String, Order> ordersMap;
     List<Order> notFinishedOrders = new ArrayList<>();
 
     int recursiveIn = 0;
@@ -73,9 +73,12 @@ public class Client {
         }
     }
 
-    private PaymentInstance partialPaymentQualification(Order order, PaymentMethod method, PaymentMethod points)
+    public PaymentInstance partialPaymentQualification(Order order, PaymentMethod method, PaymentMethod points)
             throws ImpossibleTransactionException {
-
+        /*
+         * Creates PaymentInstance for completing order and paying partially with points
+         * and partially with money
+         */
         PaymentInstance payment = new PaymentInstance();
         if (points.getLimit() >= order.getValue() * 0.1) {
             payment.setDiscountValue(order.getValue() * 0.1);
@@ -84,17 +87,25 @@ public class Client {
         payment.setValue(order.getValue() - payment.getDiscountValue());
         payment.setPointsUsed(order.getValue() * 0.1);
 
-        if (payment.getMoneyValue() > method.getLimit()) {
+        if (payment.getMoneyValue() > method.getLimit()) { // + points.getLimit() - payment.getPointsUsed()) {
             throw new ImpossibleTransactionException();
         }
+
+        if (payment.getMoneyValue() > method.getLimit()) {
+            payment.setPointsUsed(payment.getPointsUsed() + payment.getMoneyValue() - method.getLimit());
+        }
+
         payment.setMethodId(method.getId());
         payment.setOrderId(order.getId());
 
         return payment;
     }
 
-    private PaymentInstance pointsPaymentQualification(Order order, PaymentMethod points)
+    public PaymentInstance pointsPaymentQualification(Order order, PaymentMethod points)
             throws ImpossibleTransactionException {
+        /*
+         * Creates PaymentInstance for completing order and paying with points
+         */
 
         PaymentInstance payment = new PaymentInstance();
         payment.setDiscountValue(order.getValue() * points.getDiscount());
@@ -108,8 +119,11 @@ public class Client {
         return payment;
     }
 
-    private PaymentInstance cardPaymentQualification(Order order, PaymentMethod method)
+    public PaymentInstance cardPaymentQualification(Order order, PaymentMethod method)
             throws ImpossibleTransactionException {
+        /*
+         * Creates PaymentInstance for completing order and paying with money
+         */
         PaymentInstance payment = new PaymentInstance();
         double discount = 0;
         if (order.getPromotions() != null && order.getPromotions().contains(method.getId())) {
@@ -127,6 +141,9 @@ public class Client {
     }
 
     private void iterateOverMethods(Order order, PaymentMethod points, List<PaymentInstance> paymentInstances) {
+        /*
+         * checks all methods for 
+         */
         if (order == null)
             return;
         for (PaymentMethod method : paymentMethodsMap.values()) {
@@ -142,22 +159,19 @@ public class Client {
         }
     }
 
-    private PaymentInstance chooseBestPayment(List<PaymentInstance> listOfPayments) {
+    public PaymentInstance chooseBestPayment(List<PaymentInstance> listOfPayments) {
         if (listOfPayments.size() == 0) {
-            System.out.println("no length"); // TODO not finished orders, not payments and higher
             return null;
         }
-        PaymentInstance bestPayment = new PaymentInstance();// To differ by discounts ammount - base constructor sets
-                                                            // it to 0
         listOfPayments.sort((o1, o2) -> PaymentInstance.comparePaymentInstances(o1, o2));
-        return listOfPayments.get(0);
+        return listOfPayments.get(0); // taking payment version with highest discount
     }
 
     private void paymentVerification(PaymentInstance payment, PaymentMethod points) {
         if (payment == null || payment.getMethodId() == null || payment.getOrderId() == null)
             return;
         PaymentMethod method = paymentMethodsMap.get(payment.getMethodId());
-        System.out.println(payment.getOrderId());
+        // System.out.println(payment.getOrderId());
         try {
             // System.out.println(payment.getOrderId());
             if (!payment.getMethodId().equals("PUNKTY"))
@@ -172,7 +186,7 @@ public class Client {
                     // recursiveIn = 0;
                     // System.out.println(payment.getOrderId());
                     if (!payment.getMethodId().equals("PUNKTY"))
-                    method.spend(payment.getValue(), points);
+                        method.spend(payment.getValue(), points);
                 } else {
                     method.spend(payment.getValue());
                     points.spend(payment.getPointsUsed());
@@ -182,10 +196,12 @@ public class Client {
                 List<PaymentInstance> paymentsForOrder = new ArrayList<>();
                 iterateOverMethods(ordersMap.get(payment.orderId), points, paymentsForOrder);
                 recursiveIn += 1;
-                if (!(recursiveIn >= 10)) {
-                    if (paymentsForOrder.size() == 0)
-                    {
-                        System.out.println(payment.getOrderId() + " " +payment.getMethodId() + " points " + points.getLimit() + " method " + paymentMethodsMap.get(payment.getMethodId()).getLimit());
+                if (!(recursiveIn >= 10)) // for safety
+                {
+                    if (paymentsForOrder.size() == 0) {
+                        System.out.println(
+                                payment.getOrderId() + " " + payment.getMethodId() + " points " + points.getLimit()
+                                        + " method " + paymentMethodsMap.get(payment.getMethodId()).getLimit());
                         notFinishedOrders.add(ordersMap.get(payment.getOrderId()));
                     }
                     paymentVerification(chooseBestPayment(paymentsForOrder), points);
